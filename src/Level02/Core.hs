@@ -130,7 +130,7 @@ handleRequest (ViewRq topic) =
   Right $
   resp200
     PlainText
-    (LBSchar.pack $ ("View request not implemented" ++ show topic))
+    (LBSchar.pack $ ("View request not implemented " ++ show topic))
 handleRequest ListRq =
   Right $ resp200 PlainText ("List request not implemented")
 
