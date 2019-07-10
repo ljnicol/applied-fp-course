@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
+
 module Level04.DB
-  ( FirstAppDB (FirstAppDB)
+  ( FirstAppDB(FirstAppDB)
   , initDB
   , closeDB
   , addCommentToTopic
@@ -27,7 +28,6 @@ import           Level04.Types                      (Comment, CommentText,
 -- ------------------------------------------------------------------------|
 -- You'll need the documentation for sqlite-simple ready for this section! |
 -- ------------------------------------------------------------------------|
-
 -- We have a data type to simplify passing around the information we need to run
 -- our database queries. This also allows things to change over time without
 -- having to rewrite all of the functions that need to interact with DB related
@@ -40,25 +40,32 @@ data FirstAppDB = FirstAppDB
   }
 
 -- Quick helper to pull the connection and close it down.
-closeDB
-  :: FirstAppDB
-  -> IO ()
-closeDB =
-  error "closeDB not implemented"
+closeDB :: FirstAppDB -> IO ()
+closeDB = error "closeDB not implemented"
 
 -- Given a `FilePath` to our SQLite DB file, initialise the database and ensure
 -- our Table is there by running a query to create it, if it doesn't exist
 -- already.
-initDB
-  :: FilePath
-  -> IO ( Either SQLiteResponse FirstAppDB )
-initDB fp =
-  error "initDB not implemented"
-  where
+initDB :: FilePath -> IO (Either SQLiteResponse FirstAppDB)
+initDB fp
+  -- open
+  -- creatething
+  -- constructor
+  -- runDBAction wraps IO a in Either
+ =
+  Sql.runDBAction $ do
+    conn <- Sql.open fp
+    -- execute_ returns IO () so throw away result
+    _ <- Sql.execute_ conn createTableQ
+    -- lift FirstAppDb into IO a
+    pure $ FirstAppDB conn
+  -- error "blah"
   -- Query has an `IsString` instance so string literals like this can be
   -- converted into a `Query` type when the `OverloadedStrings` language
   -- extension is enabled.
-    createTableQ = "CREATE TABLE IF NOT EXISTS comments (id INTEGER PRIMARY KEY, topic TEXT, comment TEXT, time TEXT)"
+  where
+    createTableQ =
+      "CREATE TABLE IF NOT EXISTS comments (id INTEGER PRIMARY KEY, topic TEXT, comment TEXT, time TEXT)"
 
 -- Note that we don't store the `Comment` in the DB, it is the type we build
 -- to send to the outside world. We will be loading our `DBComment` type from
@@ -70,46 +77,26 @@ initDB fp =
 --
 -- HINT: You can use '?' or named place-holders as query parameters. Have a look
 -- at the section on parameter substitution in sqlite-simple's documentation.
-getComments
-  :: FirstAppDB
-  -> Topic
-  -> IO (Either Error [Comment])
+getComments :: FirstAppDB -> Topic -> IO (Either Error [Comment])
 getComments =
-  let
-    sql = "SELECT id,topic,comment,time FROM comments WHERE topic = ?"
+  let sql = "SELECT id,topic,comment,time FROM comments WHERE topic = ?"
   -- There are several possible implementations of this function. Particularly
   -- there may be a trade-off between deciding to throw an Error if a DBComment
   -- cannot be converted to a Comment, or simply ignoring any DBComment that is
   -- not valid.
-  in
-    error "getComments not implemented"
+   in error "getComments not implemented"
 
-addCommentToTopic
-  :: FirstAppDB
-  -> Topic
-  -> CommentText
-  -> IO (Either Error ())
+addCommentToTopic :: FirstAppDB -> Topic -> CommentText -> IO (Either Error ())
 addCommentToTopic =
-  let
-    sql = "INSERT INTO comments (topic,comment,time) VALUES (?,?,?)"
-  in
-    error "addCommentToTopic not implemented"
+  let sql = "INSERT INTO comments (topic,comment,time) VALUES (?,?,?)"
+   in error "addCommentToTopic not implemented"
 
-getTopics
-  :: FirstAppDB
-  -> IO (Either Error [Topic])
+getTopics :: FirstAppDB -> IO (Either Error [Topic])
 getTopics =
-  let
-    sql = "SELECT DISTINCT topic FROM comments"
-  in
-    error "getTopics not implemented"
+  let sql = "SELECT DISTINCT topic FROM comments"
+   in error "getTopics not implemented"
 
-deleteTopic
-  :: FirstAppDB
-  -> Topic
-  -> IO (Either Error ())
+deleteTopic :: FirstAppDB -> Topic -> IO (Either Error ())
 deleteTopic =
-  let
-    sql = "DELETE FROM comments WHERE topic = ?"
-  in
-    error "deleteTopic not implemented"
+  let sql = "DELETE FROM comments WHERE topic = ?"
+   in error "deleteTopic not implemented"

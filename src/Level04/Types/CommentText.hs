@@ -2,6 +2,7 @@ module Level04.Types.CommentText
   ( CommentText
   , mkCommentText
   , getCommentText
+  , encodeCommentText
   ) where
 
 import           Waargonaut.Encode          (Encoder)
@@ -13,20 +14,15 @@ import           Level04.Types.Error        (Error (EmptyCommentText),
 import           Data.Functor.Contravariant (contramap)
 import           Data.Text                  (Text)
 
-newtype CommentText = CommentText Text
-  deriving Show
+newtype CommentText =
+  CommentText Text
+  deriving (Show)
 
-mkCommentText
-  :: Text
-  -> Either Error CommentText
-mkCommentText =
-  nonEmptyText CommentText EmptyCommentText
+mkCommentText :: Text -> Either Error CommentText
+mkCommentText = nonEmptyText CommentText EmptyCommentText
 
-getCommentText
-  :: CommentText
-  -> Text
-getCommentText (CommentText t) =
-  t
+getCommentText :: CommentText -> Text
+getCommentText (CommentText t) = t
 
 -- | We will use this function to describe how we would like our `CommentText`
 -- type to be encoded into JSON.
@@ -53,5 +49,4 @@ getCommentText (CommentText t) =
 -- for this level.
 --
 encodeCommentText :: Applicative f => Encoder f CommentText
-encodeCommentText = -- Try using 'contramap' and 'E.text'.
-  error "CommentText JSON encoder not implemented"
+encodeCommentText = contramap getCommentText E.text
