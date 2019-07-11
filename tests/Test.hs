@@ -41,23 +41,44 @@ import           Network.HTTP.Types as HTTP
 -- | This import is provided for you so you can check your work from Level02. As
 -- you move forward, come back and import your latest 'Application' so that you
 -- can test your work as you progress.
-import qualified Level02.Core       as Core
+import qualified Level02.Core       as Core02
+import qualified Level04.Core
+import qualified Level04.DB         as DB
 
 main :: IO ()
 main =
-  defaultMain $
-  testGroup
-    "Applied FP Course - Tests"
-    [ testWai Core.app "List Topics" $ do
-        resp <- get "list"
-        assertStatus' HTTP.status200 resp
-        assertBody "List request not implemented" resp
-    , testWai Core.app "View topic fudge" $ do
-        resp <- get "fudge/view"
-        assertStatus' HTTP.status200 resp
-        assertBody "View request not implemented Topic \"fudge\"" resp
-    , testWai Core.app "Empty Input" $ do
-        resp <- post "fudge/add" ""
-        assertStatus' HTTP.status400 resp
-        assertBody "Missing comment" resp
-    ]
+  defaultMain $ do
+    testDB <- DB.initDB ":memory:"
+    testGroup
+      "Applied FP Course - Tests"
+      [ testGroup
+          "Level 02"
+          [ testWai Core02.app "List Topics" $ do
+              resp <- get "list"
+              assertStatus' HTTP.status200 resp
+              assertBody "List request not implemented" resp
+          , testWai Core02.app "View topic fudge" $ do
+              resp <- get "fudge/view"
+              assertStatus' HTTP.status200 resp
+              assertBody "View request not implemented Topic \"fudge\"" resp
+          , testWai Core02.app "Empty Input" $ do
+              resp <- post "fudge/add" ""
+              assertStatus' HTTP.status400 resp
+              assertBody "Missing comment" resp
+          ]
+      , testGroup
+          "Level 04"
+          [ testWai Core04.app "List Topics" $ do
+              resp <- get "list"
+              assertStatus' HTTP.status200 resp
+              assertBody "List request not implemented" resp
+          , testWai Core04.app "View topic fudge" $ do
+              resp <- get "fudge/view"
+              assertStatus' HTTP.status200 resp
+              assertBody "View request not implemented Topic \"fudge\"" resp
+          , testWai Core04.app "Empty Input" $ do
+              resp <- post "fudge/add" ""
+              assertStatus' HTTP.status400 resp
+              assertBody "Missing comment" resp
+          ]
+      ]

@@ -3,6 +3,7 @@ module Level04.Types.Topic
   , mkTopic
   , getTopic
   , encodeTopic
+  , fromDBTopic
   ) where
 
 import           Waargonaut.Encode          (Encoder)
@@ -11,6 +12,7 @@ import qualified Waargonaut.Encode          as E
 import           Data.Functor.Contravariant (contramap)
 import           Data.Text                  (Text)
 
+import           Level04.DB.Types
 import           Level04.Types.Error        (Error (EmptyTopic), nonEmptyText)
 
 newtype Topic =
@@ -57,3 +59,6 @@ getTopic (Topic t) = t
 encodeTopic :: Applicative f => Encoder f Topic
 encodeTopic -- Try using 'contramap' and 'E.text'
  = contramap getTopic E.text
+
+fromDBTopic :: DBTopic -> Either Error Topic
+fromDBTopic (DBTopic t) = mkTopic t

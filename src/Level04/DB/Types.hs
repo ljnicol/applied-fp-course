@@ -28,4 +28,10 @@ data DBComment = DBComment
 -- between different packages/databases.
 instance FromRow DBComment where
   fromRow = DBComment <$> field <*> field <*> field <*> field
+
 -- Now move to ``src/Level04/Types.hs``
+newtype DBTopic =
+  DBTopic Text
+
+instance FromRow DBTopic where
+  fromRow = DBTopic <$> field

@@ -34,13 +34,15 @@ import           Database.SQLite.SimpleErrors.Types (SQLiteResponse)
 import           Waargonaut.Encode                  (Encoder')
 import qualified Waargonaut.Encode                  as E
 
-import           Level04.Conf                       (Conf, firstAppConfig)
+import           Level04.Conf                       (Conf (..), firstAppConfig)
 import qualified Level04.DB                         as DB
 import           Level04.Types                      (ContentType (JSON, PlainText),
-                                                     Error (EmptyCommentText, EmptyTopic, InvalidId, UnknownRoute),
+                                                     Error (..),
                                                      RqType (AddRq, ListRq, ViewRq),
                                                      mkCommentText, mkTopic,
                                                      renderContentType)
+
+import           Data.Bifunctor                     (first)
 
 -- Our start-up is becoming more complicated and could fail in new and
 -- interesting ways. But we also want to be able to capture these errors in a
@@ -63,7 +65,9 @@ runApp = do
 -- Our application configuration is defined in Conf.hs
 --
 prepareAppReqs :: IO (Either StartUpError DB.FirstAppDB)
-prepareAppReqs = error "prepareAppReqs not implemented"
+prepareAppReqs = do
+  i <- DB.initDB (dbFilePath firstAppConfig)
+  pure $ first DBInitErr i
 
 -- | Some helper functions to make our lives a little more DRY.
 mkResponse :: Status -> ContentType -> LBS.ByteString -> Response
@@ -140,7 +144,8 @@ mkListRequest :: Either Error RqType
 mkListRequest = Right ListRq
 
 mkErrorResponse :: Error -> Response
-mkErrorResponse UnknownRoute     = resp404 PlainText "Unknown Route"
-mkErrorResponse EmptyCommentText = resp400 PlainText "Empty Comment"
-mkErrorResponse EmptyTopic       = resp400 PlainText "Empty Topic"
-mkErrorResponse InvalidId        = resp500 PlainText "Invalid comment id"
+mkErrorResponse UnknownRoute      = resp404 PlainText "Unknown Route"
+mkErrorResponse EmptyCommentText  = resp400 PlainText "Empty Comment"
+mkErrorResponse EmptyTopic        = resp400 PlainText "Empty Topic"
+mkErrorResponse InvalidId         = resp500 PlainText "Invalid comment id"
+mkErrorResponse (DatabaseError s) = resp500 PlainText (LBS.pack $ show s)

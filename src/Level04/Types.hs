@@ -15,6 +15,7 @@ module Level04.Types
   , getCommentText
   , renderContentType
   , fromDBComment
+  , fromDBTopic
   ) where
 
 import           GHC.Generics               (Generic)
@@ -44,11 +45,10 @@ import           Level04.DB.Types           (DBComment (..))
 -- just spin up another module.
 import           Level04.Types.CommentText  (CommentText, encodeCommentText,
                                              getCommentText, mkCommentText)
-import           Level04.Types.Topic        (Topic, encodeTopic, getTopic,
-                                             mkTopic)
+import           Level04.Types.Topic        (Topic, encodeTopic, fromDBTopic,
+                                             getTopic, mkTopic)
 
-import           Level04.Types.Error        (Error (EmptyCommentText, EmptyTopic, InvalidId, UnknownRoute),
-                                             gtZeroInt)
+import           Level04.Types.Error        (Error (..), gtZeroInt)
 
 newtype CommentId =
   CommentId Int

@@ -6,7 +6,8 @@ module Level04.Types.Error
   , gtZeroInt
   ) where
 
-import           Data.Text (Text)
+import           Data.Text                          (Text)
+import           Database.SQLite.SimpleErrors.Types (SQLiteResponse)
 
 data Error
   = UnknownRoute
@@ -14,6 +15,7 @@ data Error
   | EmptyTopic
   | InvalidId
   -- Add another constructor for our DB error types.
+  | DatabaseError SQLiteResponse
   deriving (Eq, Show)
 
 nonEmptyText :: (Text -> a) -> Error -> Text -> Either Error a
