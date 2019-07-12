@@ -55,6 +55,12 @@ import           Data.Bifunctor         (first)
 newtype AppM a =
   AppM (IO (Either Error a))
 
+-- Everything in this module could easily be replaced by:
+-- newtype App a = App
+--   { runApp :: ExceptT Error IO a
+--   } deriving (Functor, Applicative, Monad, MonadIO, MonadError Error)
+--
+--
 -- This structure allows us to start writing our functions in terms of
 -- constraints. As an example, if we wanted to abstract over IO and indicate
 -- that instead of the concrete type we wanted a constraint that allows for IO

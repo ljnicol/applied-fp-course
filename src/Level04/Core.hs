@@ -148,4 +148,9 @@ mkErrorResponse UnknownRoute      = resp404 PlainText "Unknown Route"
 mkErrorResponse EmptyCommentText  = resp400 PlainText "Empty Comment"
 mkErrorResponse EmptyTopic        = resp400 PlainText "Empty Topic"
 mkErrorResponse InvalidId         = resp500 PlainText "Invalid comment id"
-mkErrorResponse (DatabaseError s) = resp500 PlainText (LBS.pack $ show s)
+mkErrorResponse (DatabaseError _) = resp500 PlainText "Bad things"
+-- lel don't do what donny don't does
+-- don't leak your DB errors over the internet <3
+-- don't do it like this:
+-- mkErrorResponse (DatabaseError s) = resp500 PlainText (LBS.pack $ show s)
+-- do it like this:
