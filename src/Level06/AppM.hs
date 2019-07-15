@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE InstanceSigs          #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+
 module Level06.AppM
   ( AppM
   , App
@@ -14,6 +15,7 @@ import           Control.Monad.IO.Class (MonadIO (..))
 
 import           Data.Bifunctor         (Bifunctor (..))
 
+import           Control.Applicative    (liftA2)
 import           Level06.Types          (Error)
 
 -- We're going to upgrade the capability of our AppM by generalising the type of the errors that
@@ -42,28 +44,29 @@ runApp = runAppM
 
 -- You may copy your previously completed AppM instances here and then refactor them to suit the
 -- more generalised type of AppM.
-
 -- | -----------------------------------------------------------------------------------------------
 -- | Copy from previous level and refactor, or reimplement to practice. The choice is yours.
 -- | -----------------------------------------------------------------------------------------------
-
 instance Functor (AppM e) where
   fmap :: (a -> b) -> AppM e a -> AppM e b
-  fmap = error "fmap for (AppM e) not implemented"
+  fmap f appMa = AppM $ (fmap . fmap) f (runAppM appMa)
 
 instance Applicative (AppM e) where
   pure :: a -> AppM e a
-  pure  = error "pure for (AppM e) not implemented"
-
+  pure a = AppM $ pure . pure $ a
   (<*>) :: AppM e (a -> b) -> AppM e a -> AppM e b
-  (<*>) = error "spaceship for (AppM e) not implemented"
+  (<*>) appMf appMa = AppM $ liftA2 (<*>) (runAppM appMf) (runAppM appMa)
 
 instance Monad (AppM e) where
   return :: a -> AppM e a
-  return = error "return for (AppM e) not implemented"
-
+  return = pure
   (>>=) :: AppM e a -> (a -> AppM e b) -> AppM e b
-  (>>=)  = error "bind for (AppM e) not implemented"
+  (>>=) appMa f =
+    AppM $ do
+      a <- runAppM appMa
+      case a of
+        Left e   -> pure $ Left e
+        Right a' -> runAppM $ f a'
 
 instance MonadIO (AppM e) where
   liftIO :: IO a -> AppM e a
@@ -72,7 +75,6 @@ instance MonadIO (AppM e) where
 instance MonadError e (AppM e) where
   throwError :: e -> AppM e a
   throwError = error "throwError for (AppM e) not implemented"
-
   catchError :: AppM e a -> (e -> AppM e a) -> AppM e a
   catchError = error "catchError for (AppM e) not implemented"
 

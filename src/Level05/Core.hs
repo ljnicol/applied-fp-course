@@ -44,6 +44,8 @@ import           Level05.Types                      (ContentType (..),
                                                      mkCommentText, mkTopic,
                                                      renderContentType)
 
+import           Data.Bifunctor                     (first)
+
 -- Our start-up is becoming more complicated and could fail in new and
 -- interesting ways. But we also want to be able to capture these errors in a
 -- single type so that we can deal with the entire start-up process as a whole.
@@ -60,13 +62,13 @@ runApp
   case cfgE of
     Left err
       -- We can't run our app at all! Display the message and exit the application.
-     -> undefined
+     -> putStrLn "Failed to read config"
     Right cfg
       -- We have a valid config! We can now complete the various pieces needed to run our
       -- application. This function 'finally' will execute the first 'IO a', and then, even in the
       -- case of that value throwing an exception, execute the second 'IO b'. We do this to ensure
       -- that our DB connection will always be closed when the application finishes, or crashes.
-     -> Ex.finally (run undefined undefined) (DB.closeDB cfg)
+     -> Ex.finally (run 3000 $ app cfg) (DB.closeDB cfg)
 
 -- We need to complete the following steps to prepare our app requirements:
 --
@@ -76,7 +78,9 @@ runApp
 -- Our application configuration is defined in Conf.hs
 --
 prepareAppReqs :: IO (Either StartUpError DB.FirstAppDB)
-prepareAppReqs = error "copy your prepareAppReqs from the previous level."
+prepareAppReqs = do
+  i <- DB.initDB (Conf.dbFilePath Conf.firstAppConfig)
+  pure $ first DBInitErr i 
 
 -- | Some helper functions to make our lives a little more DRY.
 mkResponse :: Status -> ContentType -> LBS.ByteString -> Response
@@ -101,18 +105,13 @@ resp200Json e = resp200 JSON . encodeUtf8 . E.simplePureEncodeTextNoSpaces e
 -- How has this implementation changed, now that we have an AppM to handle the
 -- errors for our application? Could it be simplified? Can it be changed at all?
 app :: DB.FirstAppDB -> Application
-app db rq cb = error "This is where I finished"
-  -- do
-  -- rq' <- mkRequest rq
-  -- resp <- handleRespErr <$> handleRErr rq'
-  -- cb $ _f resp
-  -- where
-  --   handleRespErr :: Either Error Response -> Response
-  --   handleRespErr = either mkErrorResponse id
-  --   -- We want to pass the Database through to the handleRequest so it's
-  --   -- available to all of our handlers.
-  --   handleRErr :: Either Error RqType -> AppM Response
-  --   handleRErr r = (>>=) r (handleRequest db)
+app db rq cb = do
+  resp <- runAppM $ (>>=) (mkRequest rq) (handleRequest db)
+  -- resp :: (Either Error Response)
+  cb $
+    case resp of
+      Left e  -> mkErrorResponse e
+      Right r -> r
 
 handleRequest :: DB.FirstAppDB -> RqType -> AppM Response
 handleRequest db rqType =
